@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arduino Clock</title>
+
+</head>
+
+<body onload="getData()">
+    <style>
+        body {
+            background-color: #0B0C10;
+            color: #c5c6c7;
+            font-family: 'Trebuchet MS', sans-serif;
+        }
+
+        header {
+            margin: 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 200%;
+            font-weight: bold;
+            color: #66FCF1;
+            background-color: #0B0C10;
+        }
+
+        #main {
+            position: absolute;
+            width: 50%;
+            left: 25%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        form {
+            border-radius: 5px;
+            text-align: center;
+            background-color: #1f2833;
+        }
+
+        .form-li {
+            padding: 2em;
+        }
+
+        .form-li label {
+            font-size: 275%;
+        }
+
+        input {
+            border: none;
+            outline: none;
+            border-bottom: 2px solid #45A29E;
+            border-radius: 5px;
+            color: #c5c6c7;
+            background-color: #0B0C10;
+            padding: 1em;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(100%);
+        }
+
+        .current-clock {
+            margin: 2em;
+            border-radius: 5px;
+            padding: 2em;
+            text-align: center;
+            background-color: #1f2833;
+            visibility: hidden;
+        }
+
+        .current-clock p {
+            color: #c5c6c7;
+            font-size: 150%;
+        }
+
+        /* CSS */
+        .button-24 {
+            background: #FF4742;
+            border: 1px solid #FF4742;
+            border-radius: 6px;
+            box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+            box-sizing: border-box;
+            color: #FFFFFF;
+            cursor: pointer;
+            display: inline-block;
+            font-family: nunito, roboto, proxima-nova, "proxima nova", sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 16px;
+            min-height: 40px;
+            outline: 0;
+            padding: 12px 14px;
+            text-align: center;
+            text-rendering: geometricprecision;
+            text-transform: none;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            vertical-align: middle;
+        }
+
+        .button-24:hover,
+        .button-24:active {
+            background-color: initial;
+            background-position: 0 0;
+            color: #FF4742;
+        }
+
+        .button-24:active {
+            opacity: .5;
+
+        }
+
+        .button-3 {
+            appearance: none;
+            background-color: #2ea44f;
+            border: 1px solid rgba(27, 31, 35, .15);
+            border-radius: 6px;
+            box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+            box-sizing: border-box;
+            color: #fff;
+            cursor: pointer;
+            display: inline-block;
+            font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 20px;
+            padding: 6px 16px;
+            position: relative;
+            text-align: center;
+            text-decoration: none;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .button-3:focus:not(:focus-visible):not(.focus-visible) {
+            box-shadow: none;
+            outline: none;
+        }
+
+        .button-3:hover {
+            background-color: #2c974b;
+        }
+
+        .button-3:focus {
+            box-shadow: rgba(46, 164, 79, .4) 0 0 0 3px;
+            outline: none;
+        }
+
+        .button-3:disabled {
+            background-color: #94d3a2;
+            border-color: rgba(27, 31, 35, .1);
+            color: rgba(255, 255, 255, .8);
+            cursor: default;
+        }
+
+        .button-3:active {
+            background-color: #298e46;
+            box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
+        }
+
+        .alert-success {
+            padding: 1em;
+            margin: 1em;
+            border-radius: 5px;
+
+            color: #FFFFFF;
+            font-size: 125%;
+            background-color: #298e46;
+            text-align: center;
+            visibility: hidden;
+        }
+    </style>
+    <div id="main">
+        <header>
+            <h1>ARDUINO CLOCK</h1>
+        </header>
+        <div class="alert-success" onclick="removeAlert()">
+            <p>Clock set!</p>
+        </div>
+        <form action="/" method="post">
+            <div class="form-li">
+                <label for="date">Date:</label><br><br>
+                <input type="date" name="date" id="date" required>
+            </div>
+            <div class="form-li">
+                <label for="time">Time:</label><br><br>
+                <input type="time" name="time" id="time" required>
+            </div>
+            <div class="form-li">
+                <input type="submit" class="button-3" value="submit">
+            </div>
+        </form>
+        <div class="current-clock">
+            <h1>Next Alarm:</h1>
+            <p id="next-time"></p>
+            <p id="next-date"></p>
+            <button class="button-24" role="button" id="delete-alarm">Delete</button>
+        </div>
+    </div>
+</body>
+<script>
+
+    function getData() {
+        const currentClock = document.getElementsByClassName("current-clock")[0]; // Um das erste Element zu erhalten
+        const timeField = document.getElementById("next-time");
+        const dateField = document.getElementById("next-date");
+        const api = "/get-data";
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", api, true);
+        xhr.setRequestHeader("Content-type", "application/json");
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const obj = JSON.parse(xhr.responseText);
+
+                if (obj.date && obj.time) {
+                    currentClock.style.visibility = "visible"; // Das Element sichtbar machen
+                    timeField.textContent = obj.time; // Inhalt des timeField setzen
+                    dateField.textContent = obj.date; // Inhalt des dateField setzen
+                } else {
+                    currentClock.style.visibility = "hidden";
+                }
+            }
+        };
+
+        xhr.send(); // Anforderung senden
+    }
+
+    function deleteClock() {
+        const apiUrl = "/"; // Die Zielseite, auf der die POST-Anfrage gesendet wird
+        const data = {
+            date: "",
+            time: ""
+        };
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", apiUrl, true);
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+        // Konvertieren der Daten in JSON
+        const jsonData = JSON.stringify(data);
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                console.log("Erfolgreich gesendet");
+                showAlert();
+            } else {
+                console.error("Fehler beim Senden der POST-Anfrage");
+            }
+        };
+
+        xhr.send(jsonData);
+    }
+
+    function removeAlert() {
+        const alert = document.getElementsByClassName("alert-success")[0];
+        alert.style.visibility = "hidden";
+    }
+
+    function showAlert() {
+        const alert = document.getElementsByClassName("alert-success")[0];
+        alert.style.visibility = "visible";
+    }
+</script>
+
+</html>
