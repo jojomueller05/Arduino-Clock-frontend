@@ -197,6 +197,7 @@
                 <label for="time">Time:</label><br><br>
                 <input type="time" name="time" id="time" required>
             </div>
+            <input type="hidden" name="set" value="true">
             <div class="form-li">
                 <input type="submit" class="button-3" value="submit">
             </div>
@@ -205,7 +206,7 @@
             <h1>Next Alarm:</h1>
             <p id="next-time"></p>
             <p id="next-date"></p>
-            <button class="button-24" role="button" id="delete-alarm">Delete</button>
+            <button class="button-24" role="button" id="delete-alarm" onclick="deleteClock()">Delete</button>
         </div>
     </div>
 </body>
@@ -215,7 +216,7 @@
         const currentClock = document.getElementsByClassName("current-clock")[0]; // Um das erste Element zu erhalten
         const timeField = document.getElementById("next-time");
         const dateField = document.getElementById("next-date");
-        const api = "/get-data";
+        const api = "http://192.168.4.1/get-data";
 
         const xhr = new XMLHttpRequest();
         xhr.open("POST", api, true);
@@ -239,7 +240,7 @@
     }
 
     function deleteClock() {
-        const apiUrl = "/"; // Die Zielseite, auf der die POST-Anfrage gesendet wird
+        const apiUrl = "http://192.168.4.1/"; // Die Zielseite, auf der die POST-Anfrage gesendet wird
         const data = {
             date: "",
             time: "",
@@ -256,7 +257,7 @@
         xhr.onload = function () {
             if (xhr.status === 200) {
                 console.log("Erfolgreich gesendet");
-                showAlert();
+                location.reload(); // Seite nur neu laden, wenn die Anfrage erfolgreich war
             } else {
                 console.error("Fehler beim Senden der POST-Anfrage");
             }
@@ -265,14 +266,27 @@
         xhr.send(jsonData);
     }
 
+
+
     function removeAlert() {
         const alert = document.getElementsByClassName("alert-success")[0];
         alert.style.visibility = "hidden";
+
+        // Die URL ohne Parameter neu setzen
+        const newURL = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, newURL);
     }
+
 
     function showAlert() {
         const alert = document.getElementsByClassName("alert-success")[0];
         alert.style.visibility = "visible";
+    }
+
+    // Überprüfe, ob der 'error' Parameter in der URL "none" ist
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("error") === "none") {
+        showAlert();
     }
 </script>
 
