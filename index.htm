@@ -257,7 +257,9 @@
         xhr.onload = function () {
             if (xhr.status === 200) {
                 console.log("Erfolgreich gesendet");
-                location.reload(); // Seite nur neu laden, wenn die Anfrage erfolgreich war
+                var newURL = window.location.pathname + '?error=none';
+                // Aktualisiere die URL und lade die Seite neu
+                window.location.href = newURL;
             } else {
                 console.error("Fehler beim Senden der POST-Anfrage");
             }
